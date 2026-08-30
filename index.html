@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tyrrell Lab &middot; Aging, immunity, heart and brain</title>
+<meta name="description" content="The Tyrrell Lab at UAB Heersink School of Medicine studies aging-specific disease mechanisms in the heart, brain, and immune system using old mice.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'%3E%3Crect width='22' height='24' rx='3' fill='%231a5632'/%3E%3Cellipse cx='11.4' cy='13' rx='6.2' ry='4.3' fill='%23fff'/%3E%3Ccircle cx='7.6' cy='8.9' r='2.5' fill='%23fff'/%3E%3Ccircle cx='16.3' cy='12.2' r='.9' fill='%231a5632'/%3E%3Cpath d='M5.4 14.6c-2 .3-3.2-.7-3-2.4' fill='none' stroke='%23fff' stroke-width='1.15' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>document.documentElement.className += " js";</script>
+<link rel="stylesheet" href="assets/css/site.css?v=89">
+<link rel="stylesheet" href="assets/css/hero.css?v=21">
+</head>
+<body>
+
+<a class="skip" href="#hero">Skip to content</a>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <a class="brand" href="index.html"><svg viewBox="0 0 28 19" aria-hidden="true"><path d="M6.8 7.4C8.5 4.8 12.6 3.7 16.3 4.7c3.3.9 5.2 3 7.2 5 1.2 1.2 2.8 1.6 2.8 2.5s-1.8 1.2-3.2 1.2c-1.4 1.7-4.4 2.6-8 2.6h-4.5c-3.4 0-6.1-1.9-6.1-4.4 0-1.6.9-3 2.3-4.2Z"/><circle cx="17.6" cy="6.5" r="2.9"/><path d="M5.3 12.8C2.9 12.4 1.4 10.3 1.8 7.8 2 6.4 2.7 5.2 3.8 4.4" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Tyrrell&nbsp;Lab</span></a>
+    <button class="navtoggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="mainnav" id="nav" aria-label="Primary">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="research.html">Research</a>
+      <a href="people.html">People</a>
+      <a href="publications.html">Publications</a>
+      <a href="news.html">News</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="hero" id="hero">
+  <canvas id="scene"></canvas>
+
+
+  <div class="stage" id="stage">
+
+    <div class="guides fade" style="--d:900ms" aria-hidden="true">
+      <i style="left:calc(405 * var(--u))"></i>
+      <i style="left:calc(748 * var(--u))"></i>
+      <i style="left:calc(1091 * var(--u))"></i>
+    </div>
+
+    <h1 class="headline" style="--pd:18; --pr:1.2">
+      <span><i style="--d:260ms">Aging changes</i></span>
+      <span><i style="--d:360ms">everything</i></span>
+    </h1>
+
+    <p class="lede mask" style="--d:480ms; --pd:14; --pr:1">Most chronic disease arrives late in life, yet most models stay young. We work in old mice.</p>
+
+    <!-- The parallax lives on .pill-clip, not on .pill. The clip window has
+         to travel with the pill or the pill slides under a stationary edge
+         and the window shows up as a groove. .play-wrap does the same thing
+         one level out, which is why the News button never had the problem. -->
+    <div class="pill-clip" style="--pd:15; --pr:1.4">
+      <div class="pill mask" style="--d:600ms">
+        <div class="liquid-stage liquid-stage--explore" data-liquid-metal="explore">
+          <div class="liquid-plate plate" aria-hidden="true"></div>
+          <canvas class="liquid-fx" aria-hidden="true"></canvas>
+          <a class="liquid-button liquid-button--explore btn" href="research.html">
+            <svg class="ico" viewBox="0 0 115 115" aria-hidden="true">
+              <g stroke="currentColor" stroke-width="11" stroke-linecap="round">
+                <path d="M14 34.5 H101"/>
+                <path d="M14 57.5 H101"/>
+                <path d="M14 80.5 H68"/>
+              </g>
+            </svg>
+            <span class="lbl">Explore the research</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <span class="play-wrap" style="--pd:20">
+      <span class="play-clip">
+        <span class="play-glass mask-circle" style="--d:900ms">
+          <span class="liquid-stage liquid-stage--play" data-liquid-metal="play">
+            <span class="liquid-plate plate" aria-hidden="true"></span>
+            <canvas class="liquid-fx" aria-hidden="true"></canvas>
+            <a class="liquid-button liquid-button--play btn" href="news.html" aria-label="News from the lab">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 5.6h12.4v12.8a2 2 0 0 1-2 2H5.4a2 2 0 0 1-2-2V5.6Z"/>
+                <path d="M16.4 9.4h2.2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2"/>
+                <path d="M6.4 8.8h7M6.4 12h7M6.4 15.2h4.4"/>
+              </svg>
+              <span class="lbl">News</span>
+            </a>
+          </span>
+        </span>
+      </span>
+      <span class="play-ring mask-circle" style="--d:840ms" aria-hidden="true"></span>
+    </span>
+
+    <!-- Funding. Sizes and opacities carry the weight rather than any
+         ranking being stated; --x/--y place each term on the 1600u frame and
+         are simply ignored on the narrow layout, where the terms wrap. -->
+    <!-- Funding. --x/--y place each term on the 1600u frame and are ignored
+         on the narrow layout, where the terms wrap. Each carries its own --pd
+         so it parallaxes at its own depth. The larger, brighter terms move
+         most, which is what makes the group read as having depth rather than
+         sliding as one sheet. Each also carries its own --ft/--fd so the drift never falls
+         into step across the group. -->
+    <div class="funding" aria-label="Funding">
+      <i style="--x:0; --y:0; --s:24; --o:.84; --d:660ms; --pd:20; --ft:9.5s; --fd:-0.0s"><span>NIH R01</span></i>
+      <i style="--x:128; --y:10; --s:15; --o:.5; --d:720ms; --pd:10; --ft:11.5s; --fd:-2.3s"><span>T32 Grant</span></i>
+      <i style="--x:34; --y:46; --s:15; --o:.54; --d:780ms; --pd:12; --ft:12.5s; --fd:-5.1s"><span>Nathan Shock Center</span></i>
+      <i style="--x:0; --y:82; --s:20; --o:.72; --d:840ms; --pd:17; --ft:10.0s; --fd:-1.4s"><span>NIA R00</span></i>
+      <i style="--x:108; --y:88; --s:16; --o:.58; --d:900ms; --pd:13; --ft:11.0s; --fd:-6.2s"><span>AFAR Grant</span></i>
+      <i style="--x:24; --y:124; --s:17; --o:.64; --d:960ms; --pd:15; --ft:9.0s; --fd:-3.7s"><span>AHA Fellowship</span></i>
+      <i style="--x:174; --y:126; --s:16; --o:.60; --d:1020ms; --pd:14; --ft:10.5s; --fd:-3.1s"><span>STAR21</span></i>
+      <i style="--x:0; --y:162; --s:14; --o:.48; --d:1080ms; --pd:9; --ft:13.0s; --fd:-0.9s"><span>Glenn Foundation</span></i>
+      <i style="--x:150; --y:168; --s:13; --o:.44; --d:1140ms; --pd:8; --ft:12.0s; --fd:-4.6s"><span>Station 41</span></i>
+    </div>
+
+    <!-- Both cards sit after the h1 so a screen reader meets "Aging changes
+         everything" before it meets either of them. This one still paints
+         *behind* the canvas, and always did so by z-index rather than by
+         document order: .card--about is z-index:auto and #scene is z-index:3,
+         so the vessel drapes over its shoulder wherever the card sits in the
+         markup. Moving it changed the reading order and nothing else. -->
+    <!-- The figure follows the heading in both cards. On the wide layout the
+         label, heading and figure are all absolutely placed, so this order
+         is invisible there; on the narrow one the card stacks its children
+         in flow, and this is what puts the drawing after the words that say
+         what it is instead of before them. -->
+    <article class="card card--about mask" style="--d:760ms; --pd:10; --pr:2.2">
+      <p class="label">Our Focus</p>
+      <h2>Old mice and CD8+ T&nbsp;cells</h2>
+      <figure class="portal" data-delay="920">
+        <span class="portal-media"><img src="assets/img/old-mice-cd8.svg" width="320" height="140" alt="An aged mouse, and a magnified field of its T cells with the CD8+ population picked out" loading="eager" decoding="async" fetchpriority="high"></span>
+        <canvas class="pixel-reveal" aria-hidden="true"></canvas>
+      </figure>
+    </article>
+
+    <article class="card card--stove mask" style="--d:880ms; --pd:22; --pr:2.4">
+      <p class="label">Two organs</p>
+      <h2>Aged heart, aged&nbsp;brain</h2>
+      <figure class="portal" data-delay="1080">
+        <span class="portal-media"><img src="assets/img/aging-two-organs.svg" width="320" height="160" alt="Two organs: an aged heart leading to atherosclerosis, and an aged brain leading to neurodegeneration" loading="eager" decoding="async"></span>
+        <canvas class="pixel-reveal" aria-hidden="true"></canvas>
+      </figure>
+    </article>
+
+    <!-- Narrow layout only. It sits under the cards, centred on the same rail
+         they are, and carries .card--stove's own --pd so the three travel
+         together instead of drifting apart under the pointer. -->
+    <p class="uab-line fade" style="--d:1200ms; --pd:22">UAB Heersink School of Medicine</p>
+
+  </div>
+</main>
+
+<!-- Filled by assets/js/latest.js from publications.html and news.html, so
+     there is no second copy of the content to keep in sync. Ships hidden and
+     is only revealed once something was parsed; narrow layouts only, because
+     the wide landing page is sized to be exactly one screen. -->
+<section class="latest" id="latest" aria-label="Latest from the lab" hidden></section>
+
+<footer class="ftr-slim" id="site-footer">
+  <div class="ftr-slim-in">
+    <span><strong>The University of Alabama at Birmingham</strong></span>
+    <span class="r">Tyrrell Lab &middot; UAB Heersink School of Medicine</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var b=document.querySelector('.navtoggle'), n=document.getElementById('nav');
+  if(!b||!n) return;
+  b.addEventListener('click',function(){
+    var open=n.classList.toggle('open');
+    b.setAttribute('aria-expanded', open?'true':'false');
+  });
+})();
+</script>
+
+<script src="assets/vendor/three.min.js"></script>
+<script src="assets/js/hero-liquid.js?v=2"></script>
+<script src="assets/js/hero-scene.js?v=4"></script>
+<script src="assets/js/latest.js?v=13" defer></script>
+<nav class="btmnav" aria-label="Sections">
+  <a href="research.html">Research</a>
+  <a href="people.html">People</a>
+  <a href="publications.html">Publications</a>
+  <a href="news.html">News</a>
+  <a href="gallery.html">Gallery</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+</body>
+</html>

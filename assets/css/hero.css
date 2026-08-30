@@ -1,0 +1,632 @@
+/* Derived from the ThreeUI `SylvaHero` component (Living Green variant),
+ * https://github.com/MengTo/threeui — MIT, Copyright (c) 2026 Meng To.
+ * Full notice in CREDITS.md at the repo root. */
+/* Brand tokens, the reset, the webfont and the page ground all come from
+     assets/css/site.css, so index and the content pages cannot drift apart.
+     The design unit is the one thing only this page needs: 1u === 1px on the
+     1600 x 880 reference frame the composition was laid out against. */
+  /* The unit is capped by the height as well as the width. Without the
+     second term a wide, short window blows the 880u frame past the viewport
+     and the page scrolls for no reason. 660u is what the composition
+     actually needs: content runs 202u..792u, plus breathing room. */
+  :root{
+    --u: min( calc(100vw / 1600),
+              calc((100svh - var(--hdr-h) - var(--ftr-h)) / 695) );
+  }
+  @media (min-width:1900px){
+    :root{
+      --u: min( calc(1900px / 1600),
+                calc((100svh - var(--hdr-h) - var(--ftr-h)) / 695) );
+    }
+  }
+
+  /* ── hero shell ──────────────────────────────────────────────────────── */
+  .hero{
+    position:relative;
+    width:100%;
+    height:calc(100svh - var(--hdr-h));
+    min-height:calc(640 * var(--u));
+    overflow:hidden;
+    isolation:isolate;
+    /* the reference screen reads a near-flat #4a4d44 corner to corner —
+       all the modelling comes from the light pool the root sits in */
+    background:
+      radial-gradient(64% 52% at 27% 84%, rgba(255,236,183,.085) 0%, rgba(255,236,183,0) 72%),
+      radial-gradient(70% 60% at 92% 8%,  rgba(3,20,10,.16) 0%, rgba(3,20,10,0) 68%),
+      #174d34;
+  }
+  /* The floor of light the root stands in. Sampled off the reference: the
+     background climbs from 73 luma at the nav to ~128 at y 850, brightest
+     around the middle of the bottom edge. */
+  .hero::after{
+    content:'';
+    position:absolute; inset:0;
+    background:
+      radial-gradient(72% 44% at 50% 117%, rgba(255,238,190,.50) 0%, rgba(255,238,190,.22) 42%, rgba(255,238,190,.05) 72%, rgba(255,238,190,0) 88%),
+      linear-gradient(180deg, rgba(255,238,190,0) 54%, rgba(255,238,190,.035) 78%, rgba(255,238,190,.09) 100%);
+    pointer-events:none; z-index:0;
+  }
+
+  /* The whole composition lives on a centred 1600 × 880 stage.
+     Centred with margins rather than a transform on purpose: a transform would
+     open a stacking context and trap every child below #scene. */
+  .stage{
+    position:absolute; left:50%; top:50%;
+    margin-left:calc(-800 * var(--u));
+    margin-top:calc(-472 * var(--u) - var(--ftr-h) / 2);
+    width:calc(1600 * var(--u));
+    height:calc(880 * var(--u));
+  }
+
+  /* ── column guides (z 1) ─────────────────────────────────────────────── */
+  /* The column guides are off. They were drawing the composition's grid as
+     three 1px rules at 5.5% white, which is fine as structure but reads as
+     stray vertical lines against the open green field, especially on a narrow
+     layout where there is no longer a grid for them to describe. The markup
+     is left in place: delete this one declaration to bring them back. */
+  .guides{ display:none; position:absolute; inset:calc(-40 * var(--u)) 0; z-index:1; pointer-events:none; }
+  .guides i{
+    position:absolute; top:0; bottom:0; width:1px;
+    background:linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--rule) 12%, var(--rule) 78%, rgba(255,255,255,0) 100%);
+  }
+
+  /* ── three.js canvas (z 3 — above card 1, below everything else) ─────── */
+  #scene{
+    position:absolute; inset:0; z-index:3;
+    width:100%; height:100%;
+    pointer-events:none;
+    opacity:0; transition:opacity .7s var(--ease);
+  }
+  .is-ready #scene{ opacity:1; }
+
+  /* The line under the cards on the narrow layout. The wide layout has the
+     slim footer for this, so it is off here and switched on at the
+     breakpoint. */
+  .uab-line{ display:none; }
+
+  /* ── hero copy (z 4) ─────────────────────────────────────────────────── */
+  .headline{
+    position:absolute; z-index:4;
+    left:calc(46 * var(--u)); top:calc(202 * var(--u));
+    font-size:calc(63 * var(--u)); line-height:calc(65 * var(--u));
+    font-weight:300; letter-spacing:calc(-0.4 * var(--u));
+    color:var(--ink);
+  }
+  /* No overflow clip: cropping a 63u face to wipe it in cuts the descenders
+     of "Step" and "living" at the moment they land. The padding stays even
+     though the clip is gone — it set the two lines' metrics, and removing it
+     would shift line two. */
+  .headline span{ display:block; padding-bottom:.04em; }
+  .headline span i{ display:inline-block; font-style:normal; }
+
+  .lede{
+    position:absolute; z-index:4;
+    left:calc(520 * var(--u)); top:calc(196 * var(--u));
+    width:calc(208 * var(--u));
+    font-size:calc(16.5 * var(--u)); line-height:calc(22 * var(--u));
+    font-weight:300; color:var(--ink-soft);
+  }
+
+  /* ── liquid-metal controls ──────────────────────────────────────────
+     The original five-pass WebGL2 renderer now mounts directly in this
+     document. Its canvas, sizing, glass plate, shader constants and input
+     model are unchanged; only the iframe boundary has been removed. */
+  .pill-clip{
+    position:absolute; z-index:4;
+    left:calc(644 * var(--u)); top:calc(360 * var(--u));
+    width:calc(410 * var(--u)); height:calc(270 * var(--u));
+    margin:calc(-135 * var(--u)) 0 0 calc(-205 * var(--u));
+    /* The window bounds the shader's ambient pool, so it has to hug the
+       pill. These were 44.9u clear on the left and 78.9u below a pill only
+       60.1u tall, which showed as a pale rounded patch around the button.
+       16u a side now: the plate's drop shadow and the rim highlight fit,
+       a pool does not. Radius is the pill's own 30.05u plus that margin. */
+    clip-path:inset(calc(88.9 * var(--u)) calc(56.1 * var(--u))
+                    calc(88.9 * var(--u)) calc(88.9 * var(--u)) round calc(46.05 * var(--u)));
+  }
+  .pill{
+    position:absolute; inset:0; --mr:calc(150 * var(--u));
+    display:grid; place-items:center;
+  }
+
+  .liquid-stage{
+    --lu:calc(var(--h) / 516);
+    --bh:var(--h);
+    --pad:calc(900 * var(--lu));
+    position:relative;
+    width:max-content; height:max-content;
+    padding:var(--pad);
+    display:grid; place-items:center;
+    touch-action:manipulation;
+    font-family:'Lexend','Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+    font-optical-sizing:auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  .liquid-stage--explore{ --h:calc(60.156 * var(--u)); }
+  .liquid-stage--play{ --h:calc(88.2288 * var(--u)); }
+
+  .liquid-plate{
+    position:absolute;
+    inset:var(--pad);
+    border-radius:999px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.014) 44%, rgba(255,255,255,0) 64%),
+      rgba(10,12,10,.42);
+    box-shadow:
+      0 calc(var(--h) * 0.08) calc(var(--h) * 0.18) rgba(0,0,0,.38),
+      0 calc(var(--h) * 0.24) calc(var(--h) * 0.50) rgba(0,0,0,.28),
+      0 calc(var(--h) * 0.48) calc(var(--h) * 0.96) rgba(0,0,0,.16),
+      inset 0 1px 0 rgba(255,255,255,.13),
+      inset 0 calc(var(--h) * -0.02) calc(var(--h) * 0.05) rgba(255,255,255,.05);
+    transition:box-shadow .38s cubic-bezier(.22,.61,.36,1),
+               background .38s cubic-bezier(.22,.61,.36,1);
+  }
+  .liquid-stage.hot .liquid-plate{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.02) 44%, rgba(255,255,255,0) 64%),
+      rgba(8,10,8,.50);
+    box-shadow:
+      0 calc(var(--h) * 0.10) calc(var(--h) * 0.22) rgba(0,0,0,.44),
+      0 calc(var(--h) * 0.32) calc(var(--h) * 0.66) rgba(0,0,0,.34),
+      0 calc(var(--h) * 0.66) calc(var(--h) * 1.32) rgba(0,0,0,.20),
+      inset 0 1px 0 rgba(255,255,255,.17),
+      inset 0 calc(var(--h) * -0.02) calc(var(--h) * 0.05) rgba(255,255,255,.06);
+  }
+  .liquid-fx{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+  .liquid-button{
+    position:relative;
+    height:var(--bh);
+    border:0; background:none;
+    border-radius:999px;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; text-decoration:none;
+    font-family:inherit; font-weight:500; line-height:1; letter-spacing:0;
+    cursor:pointer; -webkit-tap-highlight-color:transparent; outline:none;
+  }
+  .liquid-button:focus-visible{
+    outline:calc(4 * var(--lu)) solid rgba(255,255,255,.55);
+    outline-offset:calc(10 * var(--lu));
+  }
+  .liquid-button .ico{ display:block; flex:none; overflow:visible; }
+  .liquid-button .lbl{ display:block; transform:translateY(calc(2 * var(--lu))); }
+  .liquid-button--explore{
+    padding:0 calc(224 * var(--lu)) 0 calc(95 * var(--lu));
+    gap:calc(112 * var(--lu));
+    font-size:calc(140 * var(--lu));
+  }
+  .liquid-button--explore .ico{
+    width:calc(150 * var(--lu)); height:calc(150 * var(--lu));
+  }
+  .liquid-button--play{
+    width:var(--bh); height:var(--bh); padding:0;
+  }
+  /* Stacked rather than icon-only: a bare glyph in a circle this size reads
+     as an empty well. --lu is the button's own height / 516, so these stay in
+     proportion at every breakpoint. */
+  .liquid-button--play{ flex-direction:column; gap:calc(16 * var(--lu)); }
+  .liquid-button--play .ico{
+    width:calc(126 * var(--lu)); height:calc(126 * var(--lu));
+    margin-left:0;
+  }
+  .liquid-button--play .lbl{
+    display:block; transform:none;
+    font-size:calc(60 * var(--lu));
+    font-weight:500;
+    letter-spacing:calc(5 * var(--lu));
+    text-transform:uppercase;
+    line-height:1;
+  }
+  .liquid-stage.press .liquid-plate{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.01) 44%, rgba(255,255,255,0) 64%),
+      rgba(7,9,7,.55);
+    box-shadow:
+      0 calc(var(--h) * 0.04) calc(var(--h) * 0.11) rgba(0,0,0,.46),
+      0 calc(var(--h) * 0.13) calc(var(--h) * 0.32) rgba(0,0,0,.36),
+      0 calc(var(--h) * 0.27) calc(var(--h) * 0.62) rgba(0,0,0,.22),
+      inset 0 1px 0 rgba(255,255,255,.10);
+    transition-duration:.10s;
+  }
+
+  /* ── play button (z 4) ─────────────────────────────────────────────── */
+  .play-wrap{
+    position:absolute; z-index:4; pointer-events:none;
+    left:calc(187 * var(--u)); top:calc(431 * var(--u));
+    width:calc(170 * var(--u)); height:calc(170 * var(--u));
+  }
+  .play-wrap > *{ pointer-events:auto; }
+  .play-clip{
+    position:absolute; left:50%; top:50%;
+    width:calc(396 * var(--u)); height:calc(396 * var(--u));
+    margin:calc(-198 * var(--u)) 0 0 calc(-198 * var(--u));
+    /* Same problem, same fix: 47.9u clear on each side and 80.9u below an
+       88.2u button. 16u a side leaves a 120.2u square window, and a 60.1u
+       radius makes that a circle. */
+    clip-path:inset(calc(137.9 * var(--u)) calc(137.9 * var(--u))
+                    calc(137.9 * var(--u)) calc(137.9 * var(--u)) round calc(60.1 * var(--u)));
+  }
+  .play-glass{ position:absolute; inset:0; display:grid; place-items:center; }
+  .play-ring{
+    position:absolute; inset:0; pointer-events:none;
+    border:1px solid rgba(255,255,255,.17); border-radius:50%;
+  }
+  .play-ring::after{
+    content:''; position:absolute; inset:calc(-1 * var(--u));
+    border:1px solid rgba(255,255,255,.32); border-radius:50%;
+    opacity:0; transform:scale(.86);
+    transition:opacity .7s var(--ease), transform .9s var(--ease-out);
+  }
+  .play-clip:hover ~ .play-ring::after,
+  .play-clip:focus-within ~ .play-ring::after{ opacity:1; transform:scale(1.06); }
+
+  /* ── funding cloud (z 4) ────────────────────────────────────────────
+     Replaces the two stat blocks. Each term is placed on the design frame by
+     its own --x/--y, sized by --s and faded by --o, so the whole group is
+     tuned from the markup without touching this rule. */
+  .funding{
+    position:absolute; z-index:4;
+    /* 1240u put the leftmost terms 20u off the About card's edge, which
+       read as crowding; 1288u gives the two groups clear air between them. */
+    left:calc(1288 * var(--u)); top:calc(190 * var(--u));
+    width:calc(250 * var(--u)); height:calc(206 * var(--u));
+    pointer-events:none;
+  }
+  .funding i{
+    position:absolute; display:block; white-space:nowrap;
+    left:calc(var(--x) * var(--u)); top:calc(var(--y) * var(--u));
+    font-size:calc(var(--s) * var(--u));
+    font-style:normal; font-weight:400;
+    letter-spacing:calc(0.2 * var(--u));
+    color:rgba(255,255,255,var(--o));
+    text-shadow:0 calc(2 * var(--u)) calc(16 * var(--u)) rgba(2,16,8,.62);
+    opacity:0;
+  }
+  .is-ready .funding i{ opacity:1; transition:opacity 1.1s var(--ease) var(--d,0ms); }
+  /* The drift lives on the inner span because .par writes `transform` on the
+     <i> for the pointer parallax — one element cannot carry both. */
+  .funding i span{ display:inline-block; will-change:transform; }
+  .is-ready .funding i span{
+    animation:wordDrift var(--ft,11s) ease-in-out var(--fd,0s) infinite alternate;
+  }
+  @keyframes wordDrift{
+    from{ transform:translate3d(calc(-1.5 * var(--u)), calc(-3.5 * var(--u)), 0); }
+    to  { transform:translate3d(calc( 2.0 * var(--u)), calc( 3.5 * var(--u)), 0); }
+  }
+
+  /* ── cards ───────────────────────────────────────────────────────────── */
+  .card{
+    position:absolute;
+    background:var(--card); border-radius:calc(46 * var(--u));
+    box-shadow:0 calc(30 * var(--u)) calc(70 * var(--u)) rgba(2,18,9,.34);
+    transition:box-shadow .8s var(--ease);
+  }
+  /* No z-index here on purpose. z-index:auto keeps the card out of its own
+     stacking context, so the body paints under #scene (the moss drapes over
+     its shoulder). Nothing inside it needs to sit in front any more. */
+  .card--about{
+    left:calc(890 * var(--u)); top:calc(200 * var(--u));
+    width:calc(330 * var(--u)); height:calc(305 * var(--u));
+  }
+  .card--stove{
+    z-index:4; will-change:transform;
+    left:calc(1237 * var(--u)); top:calc(482 * var(--u));
+    width:calc(328 * var(--u)); height:calc(310 * var(--u));
+  }
+  .card .label{
+    position:absolute; left:calc(38 * var(--u));
+    font-size:calc(15.5 * var(--u)); font-weight:300; color:var(--card-label);
+  }
+  .card h2{
+    position:absolute; left:calc(38 * var(--u));
+    font-size:calc(26.2 * var(--u)); line-height:calc(27 * var(--u));
+    font-weight:400; letter-spacing:calc(-0.5 * var(--u)); color:var(--card-ink);
+  }
+  .card--about .label{ top:calc(152 * var(--u)); }
+  .card--about h2{ top:calc(177 * var(--u)); width:calc(196 * var(--u)); }
+  .card--stove .label{ top:calc(45 * var(--u)); }
+  /* Without a width the heading just runs off the right edge of the card —
+     .card--about has always had one; this one was missing it. */
+  .card--stove h2{ top:calc(70 * var(--u)); width:calc(252 * var(--u)); }
+  /* Both cards carry a plate. The Field Note reads downward — label, title,
+     then the photograph — so its window sits at the foot of the card; the
+     Ethos card reads the other way up, so its window is at the head and the
+     copy sits under it. Same frame, mirrored. */
+  .card figure{
+    position:absolute; left:calc(14 * var(--u)); right:calc(14 * var(--u));
+    border-radius:calc(34 * var(--u)); overflow:hidden;
+    isolation:isolate; background:#0d2c1c;
+  }
+  .card--stove figure{ bottom:calc(14 * var(--u)); height:calc(158 * var(--u)); }
+  /* This plate holds a diagram on white, not a photograph. Paper behind it
+     and object-fit:contain so it sits on the card like a printed figure
+     instead of being cropped into a dark window. */
+  .card--stove figure{ background:var(--card); }
+  .card--stove .portal-media img{ object-fit:contain; transform:scale(1); }
+  .card--stove:hover .portal-media img{ transform:scale(1.03); }
+  .card--about figure{ top:calc(14 * var(--u)); height:calc(122 * var(--u)); }
+  /* Both plates now hold drawings rather than photographs, so both are paper.
+     The dark window this one used to be was right for a micrograph and wrong
+     for a line drawing, which would have vanished into it. */
+  .card--about figure{ background:var(--card); }
+  .card--about .portal-media img{ object-fit:contain; transform:scale(1); }
+  .card--about:hover .portal-media img{ transform:scale(1.03); }
+  /* The plate is its own depth plane. It travels against the card and the
+     moss, so the landscape feels like a small window rather than a
+     photograph glued to the surface. */
+  .portal-media{
+    position:absolute; inset:calc(-9 * var(--u)); z-index:1; display:block;
+    will-change:transform,clip-path;
+    transform:
+      perspective(900px)
+      translate3d(calc(var(--px,0) * -11px),calc(var(--py,0) * -7px),0)
+      rotateY(calc(var(--px,0) * -1.4deg))
+      rotateX(calc(var(--py,0) * .9deg));
+    transform-origin:50% 50%;
+  }
+  .portal-media img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    transform:scale(1.08);
+    filter:saturate(.92) contrast(1.03);
+    transition:transform 1.25s var(--ease-out),filter .8s var(--ease);
+  }
+  .card:hover .portal-media img{ transform:scale(1.13); filter:saturate(1.04) contrast(1.04); }
+  .pixel-reveal{
+    position:absolute; inset:0; z-index:3; width:100%; height:100%;
+    pointer-events:none; opacity:0; mix-blend-mode:screen;
+  }
+  /* The white scan rides the clip edge, so its centre has to travel the
+     media element's box, not the figure's — .portal-media is overscanned by
+     9u on every side to give the parallax rotation somewhere to go. Offsetting
+     by that 9u in calc() rather than by a translate percentage keeps the
+     glow on the edge at every breakpoint, whatever size the plate is. */
+  .card figure::after{
+    content:''; position:absolute; z-index:2;
+    filter:blur(calc(2 * var(--u))); opacity:0; pointer-events:none;
+    top:0; bottom:0; width:26%; left:calc(-13% - 9 * var(--u));
+    background:linear-gradient(90deg,transparent,rgba(255,235,175,.22) 42%,rgba(255,252,240,.74) 54%,transparent);
+  }
+
+  .card:hover{ box-shadow:0 calc(38 * var(--u)) calc(84 * var(--u)) rgba(2,18,9,.40); }
+
+  /* ── entrance: everything is wiped in behind a mask ───────────────────
+     Transform is reserved for the pointer parallax, so the reveal is done
+     with clip-path. Once the intro has run, .intro-done drops the clip
+     entirely — a live clip-path would open a stacking context on the About
+     card and pin it under the moss for good. */
+  .js .mask{ clip-path:inset(100% 0 0 0 round var(--mr,0px)); }
+  .is-ready .mask{
+    clip-path:inset(0 0 0 0 round var(--mr,0px));
+    transition:clip-path 1.05s var(--ease-out) var(--d,0ms);
+  }
+  .js .mask-circle{ clip-path:circle(0% at 50% 50%); }
+  .is-ready .mask-circle{
+    clip-path:circle(76% at 50% 50%);
+    transition:clip-path 1.1s var(--ease-out) var(--d,0ms);
+  }
+  .js .fade{ opacity:0; }
+  .is-ready .fade{ opacity:1; transition:opacity 1.3s var(--ease) var(--d,0ms); }
+
+  .intro-done .mask, .intro-done .mask-circle{ clip-path:none; transition:none; }
+
+  .card{ --mr:calc(46 * var(--u)); }
+
+  /* A short rise under a fade rather than a full-height wipe: with nothing
+     cropping it, a 105% travel would start line one sitting on top of line
+     two. .headline itself carries the pointer parallax, so the transform has
+     to go on the inner <i>. */
+  .js .headline span i{ opacity:0; transform:translateY(calc(16 * var(--u))); }
+  .is-ready .headline span i{
+    opacity:1; transform:none;
+    transition:opacity 1.05s var(--ease) var(--d,0ms),
+               transform 1.25s var(--ease-out) var(--d,0ms);
+  }
+
+  /* Each plate resolves like a low-bandwidth botanical transmission: a
+     stepped clip exposes the photograph while sampled pixel-dots gather along
+     the advancing edge (the dots themselves are painted by canvas).
+     Both plates scan across, the Ethos one a beat ahead of the Field Note. */
+  .js .portal-media{ clip-path:inset(0 100% 0 0 round calc(25 * var(--u))); }
+  .is-ready .card--about .portal-media{ animation:portal-cut 1.45s steps(12,end) .92s both; }
+  .is-ready .card--stove .portal-media{ animation:portal-cut 1.45s steps(12,end) 1.08s both; }
+  .is-ready .card--about figure::after{ animation:portal-scan 1.45s steps(12,end) .92s both; }
+  .is-ready .card--stove figure::after{ animation:portal-scan 1.45s steps(12,end) 1.08s both; }
+  .intro-done .portal-media{ clip-path:none; animation:none; }
+  @keyframes portal-cut{
+    from{ clip-path:inset(0 100% 0 0 round calc(25 * var(--u))); }
+    to{ clip-path:inset(0 0 0 0 round calc(25 * var(--u))); }
+  }
+  /* The glow travels by animating its own offset, not by a translate
+     percentage. A translate is a percentage of the glow's width, so the
+     distance it covers depends on the plate's proportions — it overshot by
+     a quarter of the card here and rode ahead of the edge the whole way.
+     In calc() the travel is exactly the media box: 100% of the plate plus
+     the 9u of overscan at each end, at every breakpoint. */
+  @keyframes portal-scan{
+    0%{ left:calc(-13% - 9 * var(--u)); opacity:0; }
+    10%{ opacity:.75; }
+    88%{ opacity:.55; }
+    100%{ left:calc(87% + 9 * var(--u)); opacity:0; }
+  }
+
+  /* No clip on the canvas: the root draws itself in behind the survey pulse,
+     and a CSS wipe on top of that would be two reveals fighting each other.
+     The fade is only here to cover the first compiled frame. */
+  .is-ready #scene{ transition:opacity .45s var(--ease); }
+
+  /* ── pointer parallax ────────────────────────────────────────────────
+     --px / --py are written on .hero once per frame (-1…1). Each layer
+     declares how far it rides (--pd, px at full deflection) and how much
+     it turns (--pr, degrees), which is what gives the plane its depth. */
+  .par{
+    transform:
+      perspective(1400px)
+      translate3d(calc(var(--px,0) * var(--pd,0) * -1px),
+                  calc(var(--py,0) * var(--pd,0) * -0.62px),
+                  0)
+      rotateY(calc(var(--px,0) * var(--pr,0) * 1deg))
+      rotateX(calc(var(--py,0) * var(--pr,0) * -0.7deg));
+  }
+  .card--about{ transform-origin:50% 50%; }
+
+  /* ── keyboard focus ──────────────────────────────────────────────────── */
+  a:focus-visible, button:focus-visible{
+    outline:2px solid rgba(255,255,255,.85);
+    outline-offset:calc(4 * var(--u));
+    border-radius:calc(6 * var(--u));
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .mask,.mask-circle,.fade,#scene,
+    .headline span i{ opacity:1 !important; clip-path:none !important; transform:none !important; transition:none !important; }
+    .par{ transform:none !important; }
+    .portal-media{ clip-path:none !important; animation:none !important; transform:none !important; }
+    .pixel-reveal,.card figure::after{ display:none !important; }
+    .portal-media img{ transform:none !important; transition:none !important; }
+    #scene{ transition:none; }
+  }
+
+  /* ── narrow screens: one column, the moss becomes a band between the
+        copy and the cards (760 design units wide) ───────────────────────── */
+  @media (max-width:900px){
+    :root{ --u: calc(100vw / 760); }
+    .hero{ height:auto; min-height:calc(100svh - var(--hdr-h)); }
+    .stage{
+      position:relative; left:auto; top:auto; margin:0;
+      /* 1821u. The cards stack their contents here rather than sitting them
+         side by side, so they are 333u and 359u tall instead of 262u and
+         268u; card two ends at 1650u and the last 130u is the band the
+         floating line sits in. The card heights are auto, so if their
+         content or the figure's width changes, this number, .card--stove's
+         top and .uab-line's top are what have to follow. */
+      width:100%; height:calc(1780 * var(--u));
+    }
+    .hero::after{
+      background:
+        radial-gradient(90% 30% at 50% 74%, rgba(255,238,190,.40) 0%, rgba(255,238,190,.15) 46%, rgba(255,238,190,0) 82%),
+        linear-gradient(180deg, rgba(255,238,190,0) 62%, rgba(255,238,190,.055) 100%);
+    }
+    .guides i:nth-child(3){ display:none; }
+    .guides i:nth-child(1){ left:calc(253 * var(--u)) !important; }
+    .guides i:nth-child(2){ left:calc(506 * var(--u)) !important; }
+
+    .headline{ left:calc(34 * var(--u)); top:calc(128 * var(--u)); font-size:calc(62 * var(--u)); line-height:calc(66 * var(--u)); }
+    .lede{ left:calc(34 * var(--u)); top:calc(288 * var(--u)); width:calc(400 * var(--u)); font-size:calc(19 * var(--u)); line-height:calc(27 * var(--u)); }
+    /* one column: the frame keeps its aspect, re-anchored to the left rail.
+       The rail is 34u, and the headline, lede, funding cloud and both cards
+       all sit on it exactly. The button did not: left:34u anchors the clip
+       frame, but the pill inside the liquid stage is inset from that frame,
+       so the visible button landed at 84.8u, 50.8u (25px at 375) to the
+       right of everything else. The margin carries that correction, because
+       it is what positions the frame; -79u was the wide layout's value.
+       Keep the two in step if either moves. */
+    .pill-clip{
+      left:calc(34 * var(--u)); top:calc(430 * var(--u));
+      width:calc(506 * var(--u)); height:calc(334 * var(--u));
+      margin:calc(-167 * var(--u)) 0 0 calc(-129.8 * var(--u));
+      /* The window has to hug the pill, not the frame. .liquid-fx is a
+         shader canvas that adds an ambient pool of light around the button,
+         and the clip is the only thing bounding it. These insets used to
+         leave 36.8u above the pill and 128.8u below it, so on this layout
+         the pool showed as a pale rounded patch sitting on flat green.
+
+         It does not read that way on the wide layout because the button is
+         over the tree there and the pool blends into the artwork. Here the
+         scene does not start until 555u, so the button sits on bare ground
+         with nothing to hide in.
+
+         20u of margin on every side: enough for the plate's drop shadow and
+         the rim highlight, not enough for a pool. The radius is the pill's
+         own 37.2u plus that margin. Recompute all five if the pill moves. */
+      clip-path:inset(calc(109.8 * var(--u)) calc(67.9 * var(--u)) calc(109.8 * var(--u)) calc(109.8 * var(--u)) round calc(57.2 * var(--u)));
+    }
+    .liquid-stage--explore{ --h:calc(74.4152 * var(--u)); }
+    .play-wrap{ display:none; }
+
+    /* --x/--y describe the wide frame and mean nothing here, so the terms
+       go back into normal flow and wrap. */
+    .funding{
+      left:calc(34 * var(--u)); top:calc(510 * var(--u));
+      width:calc(692 * var(--u)); height:auto;
+    }
+    .funding i{
+      position:static; display:inline-block;
+      font-size:calc(max(15, var(--s) * 1.05) * var(--u));
+      margin:0 calc(26 * var(--u)) calc(14 * var(--u)) 0;
+    }
+
+    .card{ border-radius:calc(40 * var(--u)); }
+    /* On the wide composition the card deliberately sits at z-index:auto so
+       the vessel drapes over its shoulder. Stacked into one column that
+       reads as the branch clipping the card's corner, so here it comes up
+       above the scene. */
+    /* Up 110u from 1050u. The near root's box (ARCH_N in hero-scene.js) runs
+       555u to 1106u on this layout, so at 1050u the card clipped only its
+       last 56u and read as sitting below the tree. At 940u it covers the
+       bottom 30% of the arch, which is the near root and the foot of the
+       trunk, and the two cards read as being in front of the scene rather
+       than stacked under it. z-index:4 over #scene's 3 is what makes that
+       work. 870u was tried first and put the cards too far up the trunk. */
+    /* ── the cards stack their own contents here ──────────────────────
+       Side by side, the heading got 330u of a 692u card and the drawing
+       300u, which put "Old mice and CD8+ T cells" on two lines and rendered
+       the artwork at 157x78. The labels drawn inside those SVGs are 14 SVG
+       units tall, so at that scale they came out around 6.9px: present, but
+       not readable. Full width doubles the scale to about 0.99px per SVG
+       unit and puts those labels near 14px, which is the whole reason for
+       this layout.
+
+       The DOM order already alternates (the drawing leads in card one and
+       follows in card two) and that is the rhythm the wide composition uses,
+       so flex order is left alone and nothing diverges from reading order. */
+    .card--about,
+    .card--stove{
+      z-index:4;
+      left:calc(34 * var(--u)); width:calc(692 * var(--u));
+      height:auto;
+      display:flex; flex-direction:column; align-items:stretch;
+      padding:calc(34 * var(--u));
+      gap:calc(13 * var(--u));
+    }
+    .card--about{ top:calc(940 * var(--u)); }
+    .card--stove{ top:calc(1291 * var(--u)); }
+
+    .card .label,
+    .card h2{ position:static; left:auto; top:auto; width:auto; }
+    .card h2{ font-size:calc(30 * var(--u)); line-height:calc(34 * var(--u)); }
+
+    /* position:relative, never static. .portal-media is absolute against the
+       figure with inset:-9u and the pixel reveal keys off the same box; make
+       the figure static and the drawing resolves against the card instead
+       and spills 42px past its edge. Height comes from aspect-ratio so the
+       box follows the artwork at any width. */
+    .card--about figure,
+    .card--stove figure{
+      position:relative; left:auto; right:auto; top:auto; bottom:auto;
+      /* 68% of the content width, centred. Full width made the drawing so
+         much larger than the heading above it that the card read as a
+         picture with a caption; 75% was closer but still heavy. This keeps
+         the drawing's labels around 9px, up from 6.9px side by side, for
+         about half the height that full width cost. */
+      width:68%; max-width:calc(424 * var(--u)); height:auto;
+      margin-inline:auto;
+    }
+    .card--about figure{ aspect-ratio:320 / 140; }
+    .card--stove figure{ aspect-ratio:320 / 160; }
+
+    /* Card two ends at 1650u and the stage at 1780u; this sits in that band,
+       on the cards' own 34u rail so its centre is their centre. The size is
+       in rem, not --u: it is a line of reading text with no geometry hanging
+       off it, so it can follow the browser's font size the way the rest of
+       the site does. */
+    .uab-line{
+      display:block;
+      position:absolute; z-index:4;
+      left:calc(34 * var(--u)); right:calc(34 * var(--u));
+      top:calc(1692 * var(--u));
+      text-align:center;
+      font-size:var(--t-label); font-weight:400; letter-spacing:.4px;
+      color:var(--ink-soft);
+    }
+
+  }
