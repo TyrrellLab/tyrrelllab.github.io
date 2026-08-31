@@ -992,6 +992,17 @@ h2.sec:not(:has(+ .sec-note)){ margin-bottom:26px; }
   display:flex; flex-wrap:wrap; gap:6px 18px; justify-content:space-between;
 }
 
+/* The build credit sits in the legal bar and in the landing page's slim bar.
+   `.ftr a` is a block, which is correct for the three columns above but not
+   for a name inside a sentence, thus the link goes back to inline here. The
+   colour is inherited, so the credit keeps the 4.5:1 of its own bar and the
+   underline, not a second colour, marks the link. */
+.legal a, .ftr-slim-in a{
+  display:inline; padding:0; color:inherit;
+  text-decoration:underline; text-underline-offset:2px;
+}
+.legal a:hover, .ftr-slim-in a:hover{ color:var(--ink); }
+
 /* ── latest publication and news (narrow only) ────────────────────────
    The landing page says what the lab studies but carries no evidence that it
    is active, which is the first thing a prospective trainee and a peer each
