@@ -1,0 +1,20 @@
+# macOS folder data.
+.DS_Store
+
+# Temporary locations. These files have no other copy: move them out of the
+# folder, do not delete them. See CLAUDE.md.
+assets/_originals/
+_removed-*/
+*.bak
+
+# A photograph in assets/img/ must be a WebP file, or the site does not deploy
+# it. The `!` lines below are the five exceptions.
+assets/img/**/*.jpg
+assets/img/**/*.jpeg
+assets/img/**/*.png
+
+!assets/img/NickB_Headshot-1.jpg
+!assets/img/RS54455_Daniel-Tyrrell-003-3810-3-1.jpg
+!assets/img/daniel-tyrrell-portrait.jpg
+!assets/img/siam-headshot.jpg
+!assets/img/green-labs-logo_0.png

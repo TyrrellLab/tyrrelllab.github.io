@@ -1,0 +1,33 @@
+The licence below applies to the source code of this site: the HTML, the CSS,
+the JavaScript and the build scripts that the lab wrote.
+
+It does not apply to the content. The photographs, the portraits, the
+scientific figures and the text of the pages stay under copyright, and this
+licence gives no permission to use them. Persons appear in the photographs.
+Ask the lab first.
+
+Other persons' work keeps its own licence. See CREDITS.md.
+
+---
+
+MIT License
+
+Copyright (c) 2026 Tyrrell Lab, University of Alabama at Birmingham
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
